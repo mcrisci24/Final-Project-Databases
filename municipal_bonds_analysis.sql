@@ -164,3 +164,166 @@ HAVING
     AVG(m.unemployment_rate_pct) > 3.5
 ORDER BY
     average_10yr_treasury_rate DESC;
+
+
+
+
+-- Below are the 5 required queries
+-- ANALYSIS queries
+-- Multi-table JOIN, aggregation with HAVING, Subquery, Date-based analysis, and a financial metric calculation
+
+
+
+-- Multi table JOIN joins 4 tables: bonds, issuers, bond_purposes, and trades to identify the most actively traded, long duration--risky--bonds
+-- specifically issued by county governments for education purposes. Looking for liquidity in long term sector 9 years
+--Tried to do it on more than 20 years and found out that anything greater than 10 years make the criteria
+-- too strict so we REDUCED it to 9 years
+
+SELECT
+    i.issuer_name,    -- County or Issue names
+    bp.purpose_category,  -- Specified use/purpose of bond
+    b.duration_years AS bond_duration, -- Bonds duration/remaining life (yrs)
+    COUNT(t.trade_id) AS total_trades,  --Total number of transcations for these bonds
+    ROUND(AVG(t.trade_price_usd), 2) AS average_trade_price  --avg price these bonds trade
+FROM
+    bonds b
+JOIN
+    issuers i ON b.issuer_id = i.issuer_id     -- Links bond to issueing identity. table 2
+JOIN
+    bond_purposes bp ON b.purpose_id = bp.purpose_id  -- link bond to what it funded. table 3
+JOIN
+    trades t ON b.bond_id = t.bond_id   --Link trade activity to bond
+WHERE
+    i.issuer_type = 'County'  --filter county level issuers only
+    AND bp.purpose_category = 'Education'  -- education bonds
+    AND b.duration_years > 9  -- Filter for long-duration bonds more than 9 years
+GROUP BY
+    i.issuer_name,
+    bp.purpose_category,
+    b.duration_years
+ORDER BY
+    total_trades DESC
+LIMIT 20;
+
+
+
+-- Aggregate with GROUP BY and HAVING
+-- GOAL: Find specific combination of issuer type such as city or authority and state that have issued
+-- a larger or signifcant volume--here greater than 50 bonds-- with high average interest rates greater than 5%
+-- To identify aggressive issuers in specific geographical areas
+-- We dropped the interest rate to 3% because 5% was too strict and did not find anything
+
+SELECT
+    i.state_code,
+    i.issuer_type,      --- Type whether its city,county, authority
+    COUNT(b.bond_id) AS total_bonds_issued,  -- Total # of bonds issued in this group
+    ROUND(AVG(b.coupon_rate_pct), 3) AS avg_coupon_rate   -- AVG interest rate paid
+FROM
+    bonds b
+JOIN
+    issuers i on b.issuer_id = i.issuer_id
+GROUP BY
+    i.state_code,
+    i.issuer_type
+HAVING
+    COUNT(b.bond_id) > 50
+    AND AVG(b.coupon_rate_pct) > 3.0
+ORDER BY
+    avg_coupon_rate DESC,
+    total_bonds_issued DESC
+LIMIT 30;
+
+
+
+
+-- Correlated subquery to list all bonds where the most recent trade price was below the avg trade price
+-- recorded for all ttrades with that specific bond. Highlights currently undervalued bonds.
+
+SELECT
+    b.bond_id,
+    i.issuer_name,
+    t.trade_price_usd AS latest_trade_price,     -- price of trade being examined
+    (
+        SELECT                                  --Subquery runs for every bond in outer query
+            ROUND(AVG(t_inner.trade_price_usd), 2)
+        FROM
+            trades t_inner
+        WHERE
+            t_inner.bond_id = b.bond_id           -- links the inner query to the current bond in the outer query
+    ) AS bond_historical_avg
+FROM
+    bonds b
+JOIN
+    issuers i ON b.issuer_id = i.issuer_id
+JOIN
+    trades t ON b.bond_id = t.bond_id
+WHERE                                           -- Need to only look at most recent trade for comparison
+    t.trade_date = (SELECT MAX(trade_date) FROM trades WHERE bond_id = b.bond_id)
+    AND t.trade_price_usd < (
+        SELECT AVG(t_inner.trade_price_usd)
+        FROM trades t_inner
+        WHERE t_inner.bond_id = b.bond_id
+
+    )
+ORDER BY
+    t.trade_price_usd DESC
+LIMIT 30;
+
+
+
+-- Data based analysis using date functions for time trends
+-- THe idea is to analyze the avg credit rating outlook across the market over time, grouping results by
+-- year of the credit rating and filter out stable outlooks to show market risk perception-- year over year changes.
+
+SELECT
+    EXTRACT(YEAR FROM rating_date) AS rating_year,  --Date function that extracts the year from the rating date
+    outlook,                                        -- risk outlook choices are positive or negative
+    COUNT(rating_id) AS total_ratings_in_year,     -- How many ratings were issued with this outlook
+    ROUND(AVG(
+        CASE WHEN outlook = 'Positive' THEN 100
+             WHEN outlook = 'Negative' THEN -100
+             ELSE 0 END
+
+    ),2) AS average_sentiment_score
+FROM
+    credit_ratings
+WHERE
+    outlook != 'Stable'
+GROUP BY
+    rating_year,
+    outlook
+ORDER BY
+    rating_year DESC,
+    average_sentiment_score DESC
+LIMIT 30;
+
+
+
+-- Financial metric calculation
+-- Calculate the yield spread between the trade yield and avg 10-year treasury rate for the corresponding
+-- month and state. A higher spread indicates higher risk/return vs the risk free rate
+-- Calculation is:
+-- Yield Spread = bond yield - 10 year treasury rate
+
+SELECT
+    t.trade_id,
+    i.issuer_name,
+    t.trade_date,
+    t.yield_pct AS bond_yield,
+    m.treasury_10yr_rate_pct AS treasury_rate,
+    ROUND((t.yield_pct - m.treasury_10yr_rate_pct), 3) AS yield_spread_bps  -- Calculation
+FROM
+    trades t
+JOIN
+    bonds b ON t.bond_id = b.bond_id
+JOIN
+    issuers i ON b.issuer_id = i.issuer_id
+JOIN
+    macro_economic_data m ON i.state_code = m.state_code
+        AND DATE_TRUNC('month', t.trade_date) = DATE_TRUNC('month',m.date)    -- joins only on the specific month state combination
+WHERE
+    t.yield_pct IS NOT NULL AND m.treasury_10yr_rate_pct IS NOT NULL
+ORDER BY
+    yield_spread_bps DESC     --will highlight trades with most risk
+LIMIT 30;
+

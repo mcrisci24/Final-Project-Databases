@@ -1,0 +1,52 @@
+issuer_id,issuer_name,state,issuer_type,population,tax_base_millions
+1,NY County #1,NY,County,3052884.0,31733.95
+2,NY City #2,NY,City,3484668.0,18430.5
+3,NY City #3,NY,City,1073261.0,17101.29
+4,State of NY,NY,State,,27385.96
+5,NY Transportation Authority #5,NY,Authority,,
+6,NY City #6,NY,City,4715032.0,1407.55
+7,NY Water District #7,NY,District,,
+8,State of NY,NY,State,,14182.43
+9,NY County #9,NY,County,3129176.0,46398.2
+10,State of NY,NY,State,,39872.49
+11,TX County #1,TX,County,186969.0,29900.07
+12,TX County #2,TX,County,4705480.0,33172.96
+13,TX City #3,TX,City,1550169.0,1792.79
+14,TX Airport Authority #4,TX,Authority,,
+15,TX City #5,TX,City,4143099.0,37324.59
+16,TX City #6,TX,City,4280212.0,6909.8
+17,TX City #7,TX,City,3223509.0,25886.9
+18,TX Transportation Authority #8,TX,Authority,,
+19,State of TX,TX,State,,36299.46
+20,TX Water District #10,TX,District,,
+21,State of TX,TX,State,,732.56
+22,CA Transit District #1,CA,District,,
+23,CA Hospital District #2,CA,District,,
+24,CA Port Authority #3,CA,Authority,,
+25,CA Port Authority #4,CA,Authority,,
+26,CA School District #5,CA,District,,
+27,CA Port Authority #6,CA,Authority,,
+28,CA City #7,CA,City,3646668.0,36607.63
+29,CA City #8,CA,City,4472222.0,7952.97
+30,State of FL,FL,State,,806.45
+31,FL Water District #2,FL,District,,
+32,State of FL,FL,State,,42207.68
+33,FL County #4,FL,County,3322892.0,31209.78
+34,FL Airport Authority #5,FL,Authority,,
+35,FL City #6,FL,City,4235313.0,5450.36
+36,FL County #7,FL,County,1970376.0,48469.19
+37,FL Transit District #8,FL,District,,
+38,FL County #9,FL,County,2295654.0,48031.0
+39,FL Housing Authority #10,FL,Authority,,
+40,State of IL,IL,State,,46802.61
+41,IL Airport Authority #2,IL,Authority,,
+42,IL City #3,IL,City,925795.0,35760.06
+43,IL County #4,IL,County,111526.0,26469.23
+44,IL City #5,IL,City,3163110.0,46649.73
+45,IL County #6,IL,County,3431784.0,14765.41
+46,IL Transit District #7,IL,District,,
+47,IL Transit District #8,IL,District,,
+48,IL County #9,IL,County,4510340.0,1344.28
+49,IL Airport Authority #10,IL,Authority,,
+50,IL County #11,IL,County,4835185.0,41812.4
+51,IL County #12,IL,County,2199296.0,38513.67

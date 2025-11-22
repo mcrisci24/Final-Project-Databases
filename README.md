@@ -2,7 +2,7 @@
 
 Municipal Bond Market Database & Analysis
 
-Author: Mark Crisci
+Author: Mark Crisci, Muhammed Altindal, and Avery Bishop
 Course: Databases (Final Project)
 Repository: https://github.com/mcrisci24/Final-Project-Databases
 Dashboard Link:

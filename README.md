@@ -20,6 +20,22 @@ Python ETL Pipeline: A custom load.py script that cleanses and loads raw CSV dat
 Interactive Dashboard: A Streamlit web application providing live visualizations of yield curves, risk spreads, and volume trends.
 Audit System: Database triggers that automatically log all insertions, updates, and deletions for compliance.
 
+Note on Deployment: Converting the Data to MongoDB for the Streamlit App
+
+When running the dashboard locally, the application connects directly to our PostgreSQL database. However, deploying the dashboard publicly through Streamlit Cloud introduced some limitations. Streamlit Cloud does not support hosting or initiating a local Postgres server, and it restricts outbound connections to most external database ports—including those typically used by PostgreSQL. To make the dashboard portable and fully deployable, we converted our cleaned relational data into MongoDB documents. MongoDB Atlas provides a cloud-native, publicly reachable database endpoint, which allows the Streamlit application to fetch the same data—now structured as collections instead of SQL tables—without requiring a local server.
+
+This conversion required:
+
+- Restructuring the SQL tables into document-friendly formats.
+
+- Rewriting SQL joins and aggregations as MongoDB aggregation pipelines.
+
+- Updating the dashboard queries to use PyMongo instead of SQLAlchemy.
+
+- Ensuring that derived metrics (liquidity, spreads, sentiment trends, etc.) produce the same results across both systems.
+
+Functionally, the dashboard behaves the same, but the backend is now fully cloud-compatible. This enables sharing the application through a simple web link rather than relying on localhost.
+
 Database Architecture
 
 The database municipal_bonds is designed to answer questions about risk and return in the public sector.
@@ -134,4 +150,5 @@ Key Analyses Included:
 Yield Spread Calculation: Compares municipal yields against the "risk-free" 10-Year Treasury rate.
 Liquidity Analysis: Identifies the most actively traded long-duration bonds.
 Credit Risk Trends: Analyzing rating outlook changes (Positive vs. Negative) over time.
+
 
